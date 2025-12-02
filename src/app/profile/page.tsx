@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
@@ -54,15 +54,7 @@ export default function ProfilePage() {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin");
-    } else if (status === "authenticated") {
-      fetchProfile();
-    }
-  }, [status]);
-
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     try {
       const response = await fetch("/api/user/profile");
       if (response.ok) {
@@ -74,7 +66,15 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
+    } else if (status === "authenticated") {
+      fetchProfile();
+    }
+  }, [status, router, fetchProfile]);
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

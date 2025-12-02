@@ -3,6 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookOpen, CheckCircle, FileText, Download, Printer, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function GuidePage() {
   return (
@@ -43,7 +44,7 @@ export default function GuidePage() {
                 <p className="text-lg text-muted-foreground">
                   ComplainCraft helps you create formal consumer rights complaints in just 3 simple steps. 
                   No legal knowledge required - just fill out the form with your complaint details, 
-                  and we'll generate a professional complaint letter for you.
+                  and we&apos;ll generate a professional complaint letter for you.
                 </p>
               </CardContent>
             </Card>
@@ -68,12 +69,12 @@ export default function GuidePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
-                    Start by selecting what type of consumer rights violation you've experienced. You can choose multiple types:
+                    Start by selecting what type of consumer rights violation you&apos;ve experienced. You can choose multiple types:
                   </p>
                   <ul className="space-y-2 ml-6">
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span><strong>Overpricing (অতিমূল্য)</strong> - When you're charged more than the maximum retail price</span>
+                      <span><strong>Overpricing (অতিমূল্য)</strong> - When you&apos;re charged more than the maximum retail price</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -81,7 +82,7 @@ export default function GuidePage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                      <span><strong>Defective Products (ত্রুটিযুক্ত পণ্য)</strong> - Products that don't work properly</span>
+                      <span><strong>Defective Products (ত্রুটিযুক্ত পণ্য)</strong> - Products that don&apos;t work properly</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
@@ -129,7 +130,7 @@ export default function GuidePage() {
                   <div className="bg-muted p-4 rounded-lg">
                     <p className="text-sm font-medium mb-2">Detailed Description:</p>
                     <p className="text-sm text-muted-foreground">
-                      In the "Details" field, explain your complaint clearly. Include what happened, 
+                      In the &quot;Details&quot; field, explain your complaint clearly. Include what happened, 
                       when it happened, and how it affected you. The more details you provide, 
                       the stronger your complaint will be.
                     </p>
@@ -149,7 +150,7 @@ export default function GuidePage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-muted-foreground">
-                    Click "Generate Complaint" and wait a few seconds. ComplainCraft will:
+                    Click &quot;Generate Complaint&quot; and wait a few seconds. ComplainCraft will:
                   </p>
                   <ul className="space-y-3">
                     <li className="flex items-start gap-3">
@@ -190,7 +191,7 @@ export default function GuidePage() {
                       </div>
                       <h4 className="font-semibold mb-2">Edit the Draft</h4>
                       <p className="text-sm text-muted-foreground">
-                        Click "Edit" to customize the complaint letter with your personal information
+                        Click &quot;Edit&quot; to customize the complaint letter with your personal information
                       </p>
                     </div>
 
@@ -276,11 +277,11 @@ export default function GuidePage() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Create your consumer rights complaint now and stand up for your rights!
             </p>
-            <a href="/">
+            <Link href="/">
               <Button size="lg" className="text-lg px-8">
                 Start Creating Your Complaint
               </Button>
-            </a>
+            </Link>
           </div>
         </section>
       </main>

@@ -3,6 +3,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function AboutPage() {
   return (
@@ -132,7 +133,7 @@ export default function AboutPage() {
               <CardContent className="space-y-4 text-muted-foreground">
                 <p className="leading-relaxed">
                   Many consumers in Bangladesh face difficulties when trying to file formal complaints against businesses. 
-                  The process can be intimidating, especially if you don't know the proper format or which laws have been violated.
+                  The process can be intimidating, especially if you don&apos;t know the proper format or which laws have been violated.
                 </p>
                 <p className="leading-relaxed">
                   We created ComplainCraft to bridge this gap. By simplifying the complaint generation process and providing 
@@ -154,11 +155,11 @@ export default function AboutPage() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Join thousands of Bangladeshi consumers who are standing up for their rights with ComplainCraft.
             </p>
-            <a href="/">
+            <Link href="/">
               <Button size="lg" className="text-lg px-8">
                 Create Your Complaint Now
               </Button>
-            </a>
+            </Link>
           </div>
         </section>
       </main>
