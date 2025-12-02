@@ -10,7 +10,7 @@ export function Hero() {
         </h2>
         <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
           File formal consumer complaints in Bangladesh with ease. Just fill in the details, 
-          and we'll help you create a professional complaint draft.
+          and we&apos;ll help you create a professional complaint draft.
         </p>
         <div className="flex flex-wrap justify-center gap-2 pt-4 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5 bg-muted/50 px-3 py-1 rounded-full">

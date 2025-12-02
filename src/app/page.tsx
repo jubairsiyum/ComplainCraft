@@ -1,24 +1,26 @@
-import { useState } from "react"
-import { Header } from "./components/Header"
-import { Hero } from "./components/Hero"
-import { Footer } from "./components/Footer"
-import { ScrollToTop } from "./components/ScrollToTop"
-import { ComplaintForm, type ComplaintData } from "./components/ComplaintForm"
-import { AnalysisCard } from "./components/AnalysisCard"
-import { DraftCard } from "./components/DraftCard"
-import { Spinner } from "./components/Spinner"
+"use client";
+
+import { useState } from "react";
+import { Header } from "@/components/Header";
+import { Hero } from "@/components/Hero";
+import { Footer } from "@/components/Footer";
+import { ScrollToTop } from "@/components/ScrollToTop";
+import { ComplaintForm, type ComplaintData } from "@/components/ComplaintForm";
+import { AnalysisCard } from "@/components/AnalysisCard";
+import { DraftCard } from "@/components/DraftCard";
+import { Spinner } from "@/components/Spinner";
 
 interface Results {
   analysis: {
-    identifiedIssue: string
-    extractedDetails: string
-    violatedLaw: string
-    potentialPenalty: string
-  }
-  draft: string
+    identifiedIssue: string;
+    extractedDetails: string;
+    violatedLaw: string;
+    potentialPenalty: string;
+  };
+  draft: string;
 }
 
-function App() {
+export default function Home() {
   const [complaintData, setComplaintData] = useState<ComplaintData>({
     issueTypes: [],
     shopName: "",
@@ -37,15 +39,15 @@ function App() {
     delayDuration: "",
     unauthorizedCharge: "",
     details: ""
-  })
-  const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<Results | null>(null)
+  });
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<Results | null>(null);
 
-  const handleSubmit = () => {
-    setLoading(true)
-    setResults(null)
+  const handleSubmit = async () => {
+    setLoading(true);
+    setResults(null);
     
-    setTimeout(() => {
+    setTimeout(async () => {
       // Generate dynamic results based on form data
       const issueLabels = complaintData.issueTypes.map(type => {
         const option = [
@@ -64,9 +66,9 @@ function App() {
           { value: "damage", label: "Damage (ক্ষতিগ্রস্ত পণ্য)" },
           { value: "scam", label: "Scam (স্ক্যাম)" },
           { value: "violation", label: "Violation (আইন লঙ্ঘন সাধারণভাবে)" }
-        ].find(o => o.value === type)
-        return option?.label || type
-      }).join(", ")
+        ].find(o => o.value === type);
+        return option?.label || type;
+      }).join(", ");
 
       const extractedDetails = `Company: '${complaintData.shopName}'${
         complaintData.productName ? `, Product: '${complaintData.productName}'` : ''
@@ -80,7 +82,7 @@ function App() {
         complaintData.billAmount ? `, Bill Amount: '${complaintData.billAmount}'` : ''
       }${
         complaintData.refundAmount ? `, Refund Amount: '${complaintData.refundAmount}'` : ''
-      }, Date: '${complaintData.dateOfOccurrence}'`
+      }, Date: '${complaintData.dateOfOccurrence}'`;
 
       const draft = `বরাবর,
 মহাপরিচালক,
@@ -137,10 +139,10 @@ ${complaintData.details}${
 [মোবাইল নম্বর]
 
 সাক্ষী (যদি থাকে):
-১. [সাক্ষীর নাম ও ঠিকানা]`
+১. [সাক্ষীর নাম ও ঠিকানা]`;
 
-      setLoading(false)
-      setResults({
+      setLoading(false);
+      const resultsData = {
         analysis: {
           identifiedIssue: issueLabels,
           extractedDetails: extractedDetails,
@@ -148,9 +150,31 @@ ${complaintData.details}${
           potentialPenalty: "Imprisonment for up to one year, or a fine of up to 50,000 Taka, or both."
         },
         draft: draft
-      })
-    }, 2000)
-  }
+      };
+      
+      setResults(resultsData);
+
+      // Save complaint to database
+      try {
+        const response = await fetch('/api/user/complaints', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ...complaintData,
+            draftText: draft,
+          }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to save complaint');
+        }
+      } catch (error) {
+        console.error('Error saving complaint:', error);
+      }
+    }, 2000);
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -188,7 +212,5 @@ ${complaintData.details}${
       <Footer />
       <ScrollToTop />
     </div>
-  )
+  );
 }
-
-export default App
