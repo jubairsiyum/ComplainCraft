@@ -90,6 +90,12 @@ export function Header() {
                     Profile
                   </DropdownMenuItem>
                 </Link>
+                <Link href="/complaints">
+                  <DropdownMenuItem>
+                    <FileText className="mr-2 h-4 w-4" />
+                    My Complaints
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out

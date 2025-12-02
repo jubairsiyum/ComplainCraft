@@ -4,7 +4,15 @@ import { useState } from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Textarea } from "./ui/textarea"
-import { Check, Copy, Edit, Save, Printer, Download } from "lucide-react"
+import { Check, Copy, Edit, Save, Printer, Download, Eye } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
 
 interface DraftCardProps {
   draft: string
@@ -14,6 +22,7 @@ export function DraftCard({ draft }: DraftCardProps) {
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedDraft, setEditedDraft] = useState(draft)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   const copyDraft = async () => {
     const textToCopy = isEditing ? editedDraft : draft
@@ -98,6 +107,31 @@ export function DraftCard({ draft }: DraftCardProps) {
               Save Changes
             </Button>
           )}
+
+          <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="default"
+                className="flex items-center gap-2 flex-1 sm:flex-none"
+              >
+                <Eye className="h-4 w-4" />
+                Preview
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Complaint Preview (অভিযোগপত্র প্রিভিউ)</DialogTitle>
+                <DialogDescription>
+                  Review your complaint draft before downloading or printing.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-4 p-6 bg-white dark:bg-gray-900 rounded-lg border">
+                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                  {isEditing ? editedDraft : draft}
+                </pre>
+              </div>
+            </DialogContent>
+          </Dialog>
           
           <Button 
             onClick={copyDraft} 
