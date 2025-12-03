@@ -38,7 +38,8 @@ export default function Home() {
     damageDescription: "",
     delayDuration: "",
     unauthorizedCharge: "",
-    details: ""
+    details: "",
+    images: []
   });
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<Results | null>(null);
@@ -202,7 +203,7 @@ ${complaintData.details}${
                 aria-label="Complaint analysis results"
               >
                 <AnalysisCard analysis={results.analysis} />
-                <DraftCard draft={results.draft} />
+                <DraftCard draft={results.draft} complaintData={complaintData} />
               </div>
             )}
           </div>

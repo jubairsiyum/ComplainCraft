@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react"
 import { Textarea } from "./ui/textarea"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { Label } from "./ui/label"
 import { Checkbox } from "./ui/checkbox"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
+import { Combobox, ComboboxOption } from "./ui/combobox"
+import { ImageUpload } from "./ImageUpload"
 
 export interface ComplaintData {
   issueTypes: string[]
@@ -25,6 +28,7 @@ export interface ComplaintData {
   delayDuration: string
   unauthorizedCharge: string
   details: string
+  images: string[]
 }
 
 interface ComplaintFormProps {
@@ -58,6 +62,33 @@ export function ComplaintForm({
   onSubmit, 
   loading 
 }: ComplaintFormProps) {
+  const [shopOptions, setShopOptions] = useState<ComboboxOption[]>([])
+  const [loadingShops, setLoadingShops] = useState(false)
+  const [imageUploading, setImageUploading] = useState(false)
+
+  // Fetch previously complained shops
+  useEffect(() => {
+    const fetchShops = async () => {
+      setLoadingShops(true)
+      try {
+        const response = await fetch("/api/shops")
+        const result = await response.json()
+        if (result.success && result.data) {
+          const options: ComboboxOption[] = result.data.map((shop: any) => ({
+            value: shop.shopName,
+            label: `${shop.shopName} (${shop.complaintCount} complaint${shop.complaintCount > 1 ? 's' : ''})`
+          }))
+          setShopOptions(options)
+        }
+      } catch (error) {
+        console.error("Error fetching shops:", error)
+      } finally {
+        setLoadingShops(false)
+      }
+    }
+    fetchShops()
+  }, [])
+
   const handleIssueToggle = (value: string) => {
     const newIssues = data.issueTypes.includes(value)
       ? data.issueTypes.filter(v => v !== value)
@@ -132,14 +163,19 @@ export function ComplaintForm({
         {/* Shop Name */}
         <div className="space-y-2">
           <Label htmlFor="shopName" className="text-base">Shop/Company Name (দোকান/প্রতিষ্ঠানের নাম) *</Label>
-          <Input
-            id="shopName"
+          <Combobox
+            options={shopOptions}
             value={data.shopName}
-            onChange={(e) => onDataChange({ ...data, shopName: e.target.value })}
-            placeholder="e.g., Amana Big Bazar"
-            disabled={loading}
+            onValueChange={(value) => onDataChange({ ...data, shopName: value })}
+            placeholder={loadingShops ? "Loading shops..." : "Select or type shop name..."}
+            searchPlaceholder="Search or type new shop name..."
+            emptyMessage="No shops found."
+            disabled={loading || loadingShops}
             className="text-base"
           />
+          <p className="text-xs text-muted-foreground">
+            Type to search previously complained shops or enter a new shop name
+          </p>
         </div>
 
         {/* Date of Occurrence */}
@@ -403,14 +439,22 @@ export function ComplaintForm({
           />
         </div>
 
+        {/* Image Upload */}
+        <ImageUpload
+          images={data.images}
+          onImagesChange={(images) => onDataChange({ ...data, images })}
+          onUploadingChange={setImageUploading}
+          disabled={loading}
+        />
+
         {/* Submit Button */}
         <Button
           onClick={onSubmit}
-          disabled={!isFormValid() || loading}
+          disabled={!isFormValid() || loading || imageUploading}
           className="w-full sm:w-auto px-8"
           size="lg"
         >
-          Submit Complaint (অভিযোগ জমা দিন)
+          {imageUploading ? "Uploading Images..." : "Submit Complaint (অভিযোগ জমা দিন)"}
         </Button>
       </CardContent>
     </Card>

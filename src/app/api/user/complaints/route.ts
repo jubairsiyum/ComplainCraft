@@ -34,10 +34,31 @@ export async function POST(req: NextRequest) {
       user.complaints = [];
     }
     
-    user.complaints.push({
-      ...complaintData,
+    const newComplaint = {
+      issueTypes: complaintData.issueTypes || [],
+      shopName: complaintData.shopName,
+      dateOfOccurrence: complaintData.dateOfOccurrence,
+      productName: complaintData.productName || '',
+      amountPaid: complaintData.amountPaid || '',
+      advertisedPrice: complaintData.advertisedPrice || '',
+      expectedPrice: complaintData.expectedPrice || '',
+      actualPrice: complaintData.actualPrice || '',
+      billAmount: complaintData.billAmount || '',
+      serviceType: complaintData.serviceType || '',
+      warrantyPeriod: complaintData.warrantyPeriod || '',
+      purchaseDate: complaintData.purchaseDate || '',
+      refundAmount: complaintData.refundAmount || '',
+      damageDescription: complaintData.damageDescription || '',
+      delayDuration: complaintData.delayDuration || '',
+      unauthorizedCharge: complaintData.unauthorizedCharge || '',
+      details: complaintData.details,
+      draftText: complaintData.draftText,
+      images: Array.isArray(complaintData.images) ? complaintData.images : [],
       submittedAt: new Date(),
-    });
+    };
+    
+    user.complaints.push(newComplaint);
+    user.markModified('complaints');
 
     await user.save();
 
@@ -77,8 +98,14 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    // Ensure all complaints have the images field
+    const complaintsWithImages = (user.complaints || []).map((complaint: any) => ({
+      ...complaint.toObject(),
+      images: complaint.images || []
+    }));
+
     return NextResponse.json({
-      complaints: user.complaints || [],
+      complaints: complaintsWithImages,
     });
   } catch (error) {
     console.error('Error fetching complaints:', error);

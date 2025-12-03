@@ -19,6 +19,7 @@ export interface IComplaint {
   unauthorizedCharge?: string;
   details: string;
   draftText: string;
+  images?: string[];
   submittedAt: Date;
 }
 
@@ -102,9 +103,9 @@ const UserSchema: Schema<IUser> = new Schema(
     },
     complaints: [
       {
-        issueTypes: [String],
-        shopName: String,
-        dateOfOccurrence: String,
+        issueTypes: { type: [String], default: [] },
+        shopName: { type: String, required: true },
+        dateOfOccurrence: { type: String, required: true },
         productName: String,
         amountPaid: String,
         advertisedPrice: String,
@@ -118,17 +119,25 @@ const UserSchema: Schema<IUser> = new Schema(
         damageDescription: String,
         delayDuration: String,
         unauthorizedCharge: String,
-        details: String,
-        draftText: String,
+        details: { type: String, required: true },
+        draftText: { type: String, required: true },
+        images: { type: [String], default: [] },
         submittedAt: { type: Date, default: Date.now },
       },
     ],
   },
   {
     timestamps: true,
+    strict: true,
+    minimize: false,
   }
 );
 
-const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
+// Force recreate the model to ensure schema changes are applied
+if (mongoose.models.User) {
+  delete mongoose.models.User;
+}
+
+const User: Model<IUser> = mongoose.model<IUser>('User', UserSchema);
 
 export default User;

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
+import Image from "next/image"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card"
 import { Button } from "./ui/button"
 import { Textarea } from "./ui/textarea"
-import { Check, Copy, Edit, Save, Printer, Download, Eye } from "lucide-react"
+import { Check, Copy, Edit, Save, Printer, Download, Eye, Loader2 } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -13,16 +15,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog"
+import { generateComplaintPDF } from "@/lib/pdfGenerator"
+import type { ComplaintData } from "./ComplaintForm"
 
 interface DraftCardProps {
   draft: string
+  complaintData: ComplaintData
 }
 
-export function DraftCard({ draft }: DraftCardProps) {
+export function DraftCard({ draft, complaintData }: DraftCardProps) {
+  const { data: session } = useSession()
   const [copied, setCopied] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedDraft, setEditedDraft] = useState(draft)
   const [previewOpen, setPreviewOpen] = useState(false)
+  const [downloadingPDF, setDownloadingPDF] = useState(false)
+  const [fullScreenImage, setFullScreenImage] = useState<string | null>(null)
 
   const copyDraft = async () => {
     const textToCopy = isEditing ? editedDraft : draft
@@ -54,17 +62,38 @@ export function DraftCard({ draft }: DraftCardProps) {
     }
   }
 
-  const handleDownload = () => {
-    const content = isEditing ? editedDraft : draft
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'complaint-draft.txt'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
+  const handleDownload = async () => {
+    try {
+      setDownloadingPDF(true)
+      
+      // Fetch user profile for PDF generation
+      let userInfo = undefined
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/user/profile')
+          if (response.ok) {
+            const data = await response.json()
+            const user = data.user
+            userInfo = {
+              name: `${user.firstName} ${user.lastName}`,
+              nid: user.nidNo,
+              phone: user.phoneNumber,
+              presentAddress: user.presentAddress
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch user info:', error)
+        }
+      }
+
+      // Generate PDF
+      await generateComplaintPDF(complaintData, userInfo)
+    } catch (error) {
+      console.error('Failed to generate PDF:', error)
+      alert('Failed to generate PDF. Please try again.')
+    } finally {
+      setDownloadingPDF(false)
+    }
   }
 
   return (
@@ -125,10 +154,54 @@ export function DraftCard({ draft }: DraftCardProps) {
                   Review your complaint draft before downloading or printing.
                 </DialogDescription>
               </DialogHeader>
-              <div className="mt-4 p-6 bg-white dark:bg-gray-900 rounded-lg border">
-                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
-                  {isEditing ? editedDraft : draft}
-                </pre>
+              <div className="mt-4 space-y-4">
+                <div className="p-6 bg-white dark:bg-gray-900 rounded-lg border">
+                  <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
+                    {isEditing ? editedDraft : draft}
+                  </pre>
+                </div>
+                {complaintData.images && complaintData.images.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="font-semibold text-sm">Evidence Images ({complaintData.images.length})</h3>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {complaintData.images.map((url, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setFullScreenImage(url)}
+                          className="aspect-square rounded-lg overflow-hidden border hover:ring-2 hover:ring-primary transition-all cursor-pointer relative"
+                        >
+                          <Image
+                            src={url}
+                            alt={`Evidence ${idx + 1}`}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Full-screen Image Viewer */}
+          <Dialog open={!!fullScreenImage} onOpenChange={() => setFullScreenImage(null)}>
+            <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden">
+              <DialogTitle className="sr-only">Full Screen Image</DialogTitle>
+              <div className="relative w-full h-full flex items-center justify-center bg-black/90 min-h-[95vh]">
+                {fullScreenImage && (
+                  <div className="relative w-full h-full">
+                    <Image
+                      src={fullScreenImage}
+                      alt="Full screen view"
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
@@ -164,9 +237,19 @@ export function DraftCard({ draft }: DraftCardProps) {
             onClick={handleDownload} 
             variant="outline"
             className="flex items-center gap-2 flex-1 sm:flex-none"
+            disabled={downloadingPDF}
           >
-            <Download className="h-4 w-4" />
-            Download
+            {downloadingPDF ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Generating PDF...
+              </>
+            ) : (
+              <>
+                <Download className="h-4 w-4" />
+                Download PDF
+              </>
+            )}
           </Button>
         </div>
         
