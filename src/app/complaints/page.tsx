@@ -14,8 +14,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   FileText, Download, Eye, Calendar, Building, 
-  Package, DollarSign, AlertCircle, Loader2, Trash2, Check, Edit 
+  Package, DollarSign, AlertCircle, Loader2, Trash2, Check, Edit, Scale 
 } from "lucide-react";
+import { LawSection, findApplicableSections } from "@/lib/consumerLaw";
 import { generateComplaintPDF } from "@/lib/pdfGenerator";
 import {
   Dialog,
@@ -49,6 +50,7 @@ interface Complaint {
   details: string;
   draftText: string;
   images?: string[];
+  applicableSections?: LawSection[];
   submittedAt: Date;
 }
 
@@ -82,7 +84,11 @@ export default function ComplaintsPage() {
       const response = await fetch("/api/user/complaints");
       if (response.ok) {
         const data = await response.json();
-        setComplaints(data.complaints || []);
+        const complaintsWithSections = (data.complaints || []).map((complaint: Complaint) => ({
+          ...complaint,
+          applicableSections: findApplicableSections(complaint.issueTypes, complaint.details)
+        }));
+        setComplaints(complaintsWithSections);
       } else {
         setError("Failed to load complaints");
       }
@@ -350,6 +356,32 @@ export default function ComplaintsPage() {
                         <p className="text-sm text-muted-foreground mb-1">Details</p>
                         <p className="text-sm line-clamp-2">{complaint.details}</p>
                       </div>
+
+                      {complaint.applicableSections && complaint.applicableSections.length > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-orange-600 dark:text-orange-400">
+                            <Scale className="h-4 w-4" />
+                            Applicable Law Sections
+                          </div>
+                          <div className="grid gap-2">
+                            {complaint.applicableSections.map((section, idx) => (
+                              <div key={idx} className="p-3 rounded-lg bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950/30 dark:to-red-950/30 border border-orange-200 dark:border-orange-800">
+                                <div className="flex items-start gap-2">
+                                  <AlertCircle className="h-4 w-4 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                                  <div className="space-y-1">
+                                    <p className="text-sm font-semibold text-orange-900 dark:text-orange-100">
+                                      ধারা {section.section} (Section {section.section}): {section.offence}
+                                    </p>
+                                    <p className="text-xs text-orange-700 dark:text-orange-300">
+                                      শাস্তি: {section.punishment}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       <div className="flex gap-2 pt-2">
                         <Dialog>

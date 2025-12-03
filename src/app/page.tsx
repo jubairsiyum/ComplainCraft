@@ -9,6 +9,7 @@ import { ComplaintForm, type ComplaintData } from "@/components/ComplaintForm";
 import { AnalysisCard } from "@/components/AnalysisCard";
 import { DraftCard } from "@/components/DraftCard";
 import { Spinner } from "@/components/Spinner";
+import { findApplicableSections, type LawSection } from "@/lib/consumerLaw";
 
 interface Results {
   analysis: {
@@ -16,6 +17,7 @@ interface Results {
     extractedDetails: string;
     violatedLaw: string;
     potentialPenalty: string;
+    applicableSections: LawSection[];
   };
   draft: string;
 }
@@ -127,7 +129,11 @@ ${complaintData.details}${
   complaintData.damageDescription ? `\n\nক্ষতির বিবরণ:\n${complaintData.damageDescription}` : ''
 }
 
-উপরোক্ত ঘটনায় ভোক্তা অধিকার সংরক্ষণ আইন, ২০০৯ এর ধারা লঙ্ঘিত হয়েছে বলে আমি মনে করি। এই বিষয়ে যথাযথ আইনানুগ ব্যবস্থা গ্রহণের জন্য বিনীত অনুরোধ করছি।
+উপরোক্ত ঘটনায় ভোক্তা অধিকার সংরক্ষণ আইন, ২০০৯ এর নিম্নলিখিত ধারা লঙ্ঘিত হয়েছে বলে আমি মনে করি:
+
+APPLICABLE_SECTIONS_PLACEHOLDER
+
+এই বিষয়ে যথাযথ আইনানুগ ব্যবস্থা গ্রহণের জন্য বিনীত অনুরোধ করছি।
 
 সংযুক্তি:
 ১. প্রাসঙ্গিক রশিদ/বিল (যদি থাকে)
@@ -143,14 +149,39 @@ ${complaintData.details}${
 ১. [সাক্ষীর নাম ও ঠিকানা]`;
 
       setLoading(false);
+      
+      // Find applicable law sections
+      const applicableSections = findApplicableSections(complaintData.issueTypes, complaintData.details);
+      
+      // Generate sections text for draft
+      const sectionsText = applicableSections.length > 0
+        ? applicableSections.map((s, idx) => 
+            `${idx + 1}. ধারা ${s.section} (Section ${s.section}): ${s.offence}\n   শাস্তি: ${s.punishment}`
+          ).join('\n\n')
+        : 'ভোক্তা অধিকার সংরক্ষণ আইন, ২০০৯ এর প্রাসঙ্গিক ধারা';
+      
+      // Replace placeholder in draft
+      const finalDraft = draft.replace('APPLICABLE_SECTIONS_PLACEHOLDER', sectionsText);
+      
+      // Generate violated law text
+      const violatedLawText = applicableSections.length > 0
+        ? applicableSections.map(s => `Section ${s.section}`).join(", ") + ", Consumer Rights Protection Act, 2009"
+        : "Consumer Rights Protection Act, 2009";
+      
+      // Generate potential penalty text
+      const penaltyText = applicableSections.length > 0
+        ? applicableSections[0].punishment
+        : "Legal action as per Consumer Rights Protection Act, 2009";
+      
       const resultsData = {
         analysis: {
           identifiedIssue: issueLabels,
           extractedDetails: extractedDetails,
-          violatedLaw: "Section 40, Consumer Rights Protection Act, 2009",
-          potentialPenalty: "Imprisonment for up to one year, or a fine of up to 50,000 Taka, or both."
+          violatedLaw: violatedLawText,
+          potentialPenalty: penaltyText,
+          applicableSections: applicableSections
         },
-        draft: draft
+        draft: finalDraft
       };
       
       setResults(resultsData);
@@ -164,7 +195,7 @@ ${complaintData.details}${
           },
           body: JSON.stringify({
             ...complaintData,
-            draftText: draft,
+            draftText: finalDraft,
           }),
         });
 
